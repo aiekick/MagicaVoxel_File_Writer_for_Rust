@@ -32,20 +32,20 @@ use std::mem;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-struct Point3<T> {
+pub struct Point3<T> {
     pub x: T,
     pub y: T,
     pub z: T,
 }
 
 impl<T> Point3<T> {
-    fn create3(x: T, y: T, z: T) -> Self {
+    pub fn create3(x: T, y: T, z: T) -> Self {
         Self { x, y, z }
     }
 }
 
 impl<T: Clone> Point3<T> {
-    fn create1(v: T) -> Self {
+    pub fn create1(v: T) -> Self {
         Self {
             x: v.clone(),
             y: v.clone(),
@@ -141,19 +141,23 @@ impl DICTstring {
             + mem::size_of::<u8>() * (self.buffer.as_bytes().len() as usize); // prefer use u8 instead
     }
 }
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-#[test]
-fn test_dictstring_empty_get_size() {
-    let stru = DICTstring::create_empty();
-    assert_eq!(stru.get_size(), 4);
+    #[test]
+    fn test_dictstring_empty_get_size() {
+        let stru = DICTstring::create_empty();
+        assert_eq!(stru.get_size(), 4);
+    }
+
+    #[test]
+    fn test_dictstring_filled_get_size() {
+        let stru =
+            DICTstring::create_from_string(CString::new("toto va au zoo et c'est beau").unwrap());
+        assert_eq!(stru.get_size(), 32);
+    }
 }
-
-#[test]
-fn test_dictstring_filled_get_size() {
-    let stru = DICTstring::create_from_string(CString::new("toto va au zoo et c'est beau").unwrap());
-    assert_eq!(stru.get_size(), 32);
-}
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 struct DICTitem {
@@ -204,12 +208,13 @@ impl DICT {
         }
     }
 
-    fn write(&mut self, mut fp: &File) {
+    fn write(&mut self, mut fp: &File) -> std::io::Result<()> {
         self.count = self.keys.len() as i32;
-        fp.write(&self.count.to_le_bytes());
+        fp.write(&self.count.to_le_bytes())?;
         for i in 0..self.count {
-            self.keys[i as usize].write(&fp);
+            self.keys[i as usize].write(&fp)?;
         }
+        Ok(())
     }
 
     fn get_size(&mut self) -> usize {
@@ -257,25 +262,26 @@ impl Ntrn {
         }
     }
 
-    fn write(&mut self, mut fp: &File) {
+    fn write(&mut self, mut fp: &File) -> std::io::Result<()> {
         // chunk header
         let id = get_id_char('n', 'T', 'R', 'N') as i32;
-        fp.write(&id.to_le_bytes());
+        fp.write(&id.to_le_bytes())?;
         let content_size = self.get_size() as i32;
-        fp.write(&content_size.to_le_bytes());
+        fp.write(&content_size.to_le_bytes())?;
         let child_size = 0 as i32;
-        fp.write(&child_size.to_le_bytes());
+        fp.write(&child_size.to_le_bytes())?;
 
         // datas's
-        fp.write(&self.node_id.to_le_bytes());
-        self.node_attribs.write(&fp);
-        fp.write(&self.child_node_id.to_le_bytes());
-        fp.write(&self.reserved_id.to_le_bytes());
-        fp.write(&self.layer_id.to_le_bytes());
-        fp.write(&self.num_frames.to_le_bytes());
+        fp.write(&self.node_id.to_le_bytes())?;
+        self.node_attribs.write(&fp)?;
+        fp.write(&self.child_node_id.to_le_bytes())?;
+        fp.write(&self.reserved_id.to_le_bytes())?;
+        fp.write(&self.layer_id.to_le_bytes())?;
+        fp.write(&self.num_frames.to_le_bytes())?;
         for i in 0..self.num_frames {
-            self.frames[i as usize].write(&fp);
+            self.frames[i as usize].write(&fp)?;
         }
+        Ok(())
     }
 
     fn get_size(&mut self) -> usize {
@@ -311,19 +317,19 @@ impl Ngrp {
         }
     }
 
-    fn write(&mut self, mut fp: &File) {
+    fn write(&mut self, mut fp: &File) -> std::io::Result<()>  {
         // chunk header
         let id = get_id_char('n', 'G', 'R', 'P') as i32;
-        fp.write(&id.to_le_bytes());
+        fp.write(&id.to_le_bytes())?;
         let content_size = self.get_size() as i32;
-        fp.write(&content_size.to_le_bytes());
+        fp.write(&content_size.to_le_bytes())?;
         let child_size = 0 as i32;
-        fp.write(&child_size.to_le_bytes());
+        fp.write(&child_size.to_le_bytes())?;
 
         // datas's
-        fp.write(&self.node_id.to_le_bytes());
-        self.node_attribs.write(&fp);
-        fp.write(&self.node_children_nodes.to_le_bytes());
+        fp.write(&self.node_id.to_le_bytes())?;
+        self.node_attribs.write(&fp)?;
+        fp.write(&self.node_children_nodes.to_le_bytes())?;
 
         let mut _childs_nodes: Vec<u8> = vec![];
         for child in &self.child_nodes {
@@ -332,7 +338,8 @@ impl Ngrp {
                 _childs_nodes.push(byte);
             }
         }
-        fp.write(&_childs_nodes);
+        fp.write(&_childs_nodes)?;
+        Ok(())
     }
 
     fn get_size(&mut self) -> usize {
@@ -357,9 +364,10 @@ impl Model {
         }
     }
 
-    fn write(&mut self, mut fp: &File) {
-        fp.write(&self.model_id.to_le_bytes());
-        self.model_attribs.write(&fp);
+    fn write(&mut self, mut fp: &File) -> std::io::Result<()> {
+        fp.write(&self.model_id.to_le_bytes())?;
+        self.model_attribs.write(&fp)?;
+        Ok(())
     }
 
     fn get_size(&mut self) -> usize {
@@ -392,22 +400,23 @@ impl Nshp {
         }
     }
 
-    fn write(&mut self, mut fp: &File) {
+    fn write(&mut self, mut fp: &File) -> std::io::Result<()> {
         // chunk header
         let id = get_id_char('n', 'S', 'H', 'P') as i32;
-        fp.write(&id.to_le_bytes());
+        fp.write(&id.to_le_bytes())?;
         let content_size = self.get_size() as i32;
-        fp.write(&content_size.to_le_bytes());
+        fp.write(&content_size.to_le_bytes())?;
         let child_size = 0 as i32;
-        fp.write(&child_size.to_le_bytes());
+        fp.write(&child_size.to_le_bytes())?;
 
         // datas's
-        fp.write(&self.node_id.to_le_bytes());
-        self.node_attribs.write(&fp);
-        fp.write(&self.num_models.to_le_bytes());
+        fp.write(&self.node_id.to_le_bytes())?;
+        self.node_attribs.write(&fp)?;
+        fp.write(&self.num_models.to_le_bytes())?;
         for i in 0..self.num_models {
-            self.models[i as usize].write(&fp);
+            self.models[i as usize].write(&fp)?;
         }
+        Ok(())
     }
 
     fn get_size(&mut self) -> usize {
@@ -437,19 +446,20 @@ impl LAYR {
         }
     }
 
-    fn write(&mut self, mut fp: File) {
+    fn write(&mut self, mut fp: File) -> std::io::Result<()> {
         // chunk header
         let id = get_id_char('L', 'A', 'Y', 'R') as i32;
-        fp.write(&id.to_le_bytes());
+        fp.write(&id.to_le_bytes())?;
         let content_size = self.get_size() as i32;
-        fp.write(&content_size.to_le_bytes());
+        fp.write(&content_size.to_le_bytes())?;
         let child_size = 0 as i32;
-        fp.write(&child_size.to_le_bytes());
+        fp.write(&child_size.to_le_bytes())?;
 
         // datas's
-        fp.write(&self.node_id.to_le_bytes());
-        self.node_attribs.write(&fp);
-        fp.write(&self.reserved_id.to_le_bytes());
+        fp.write(&self.node_id.to_le_bytes())?;
+        self.node_attribs.write(&fp)?;
+        fp.write(&self.reserved_id.to_le_bytes())?;
+        Ok(())
     }
 
     fn get_size(&mut self) -> usize {
@@ -475,19 +485,20 @@ impl Size {
         }
     }
 
-    fn write(&self, mut fp: &File) {
+    fn write(&self, mut fp: &File) -> std::io::Result<()> {
         // chunk header
         let id = get_id_char('S', 'I', 'Z', 'E') as i32;
-        fp.write(&id.to_le_bytes());
+        fp.write(&id.to_le_bytes())?;
         let content_size = self.get_size() as i32;
-        fp.write(&content_size.to_le_bytes());
+        fp.write(&content_size.to_le_bytes())?;
         let child_size = 0 as i32;
-        fp.write(&child_size.to_le_bytes());
+        fp.write(&child_size.to_le_bytes())?;
 
         // datas's
-        fp.write(&self.size_x.to_le_bytes());
-        fp.write(&self.size_y.to_le_bytes());
-        fp.write(&self.size_z.to_le_bytes());
+        fp.write(&self.size_x.to_le_bytes())?;
+        fp.write(&self.size_y.to_le_bytes())?;
+        fp.write(&self.size_z.to_le_bytes())?;
+        Ok(())
     }
 
     fn get_size(&self) -> usize {
@@ -511,18 +522,19 @@ impl XYZI {
         }
     }
 
-    fn write(&mut self, mut fp: &File) {
+    fn write(&mut self, mut fp: &File) -> std::io::Result<()> {
         // chunk header
         let id = get_id_char('X', 'Y', 'Z', 'I') as i32;
-        fp.write(&id.to_le_bytes());
+        fp.write(&id.to_le_bytes())?;
         let content_size = self.get_size() as i32;
-        fp.write(&content_size.to_le_bytes());
+        fp.write(&content_size.to_le_bytes())?;
         let child_size = 0 as i32;
-        fp.write(&child_size.to_le_bytes());
+        fp.write(&child_size.to_le_bytes())?;
 
         // datas's
-        fp.write(&self.num_voxels.to_le_bytes());
-        fp.write(&self.voxels);
+        fp.write(&self.num_voxels.to_le_bytes())?;
+        fp.write(&self.voxels)?;
+        Ok(())
     }
 
     fn get_size(&mut self) -> usize {
@@ -545,14 +557,14 @@ impl RGBA {
         }
     }
 
-    fn write(&self, mut fp: &File) {
+    fn write(&self, mut fp: &File) -> std::io::Result<()> {
         // chunk header
         let id = get_id_char('R', 'G', 'B', 'A') as i32;
-        fp.write(&id.to_le_bytes());
+        fp.write(&id.to_le_bytes())?;
         let content_size = self.get_size() as i32;
-        fp.write(&content_size.to_le_bytes());
+        fp.write(&content_size.to_le_bytes())?;
         let child_size = 0 as i32;
-        fp.write(&child_size.to_le_bytes());
+        fp.write(&child_size.to_le_bytes())?;
 
         // datas's
         let mut _colors: Vec<u8> = vec![];
@@ -562,7 +574,8 @@ impl RGBA {
                 _colors.push(byte);
             }
         }
-        fp.write(&_colors);
+        fp.write(&_colors)?;
+        Ok(())
     }
 
     fn get_size(&self) -> usize {
@@ -603,9 +616,10 @@ impl VoxCube {
         self.cube_id == 0
     }
 
-    fn write(&mut self, fp: &File) {
-        self.size.write(&fp);
-        self.xyzi.write(&fp);
+    fn write(&mut self, fp: &File) -> std::io::Result<()> {
+        self.size.write(&fp)?;
+        self.xyzi.write(&fp)?;
+        Ok(())
     }
 
     fn add_coord(&mut self, v: u8) {
@@ -778,9 +792,13 @@ impl VoxWriter {
 
     fn merge_voxel_in_cube(
         &mut self,
-        v_x: i32, v_y: i32, v_z: i32,
+        v_x: i32,
+        v_y: i32,
+        v_z: i32,
         v_color_index: u8,
-        c_x: i32, c_y: i32, c_z: i32,
+        c_x: i32,
+        c_y: i32,
+        c_z: i32,
     ) {
         self.max_volume
             .combine(Point3::<f64>::create3(v_x as f64, v_y as f64, v_z as f64));
@@ -810,13 +828,13 @@ impl VoxWriter {
 
         let zero: i32 = 0;
 
-        file.write(&self.id_vox.to_le_bytes()); // i32
-        file.write(&self.mv_version.to_le_bytes()); // i32
-        file.write(&self.id_main.to_le_bytes()); // i32
-        file.write(&zero.to_le_bytes()); // i32
+        file.write(&self.id_vox.to_le_bytes())?; // i32
+        file.write(&self.mv_version.to_le_bytes())?; // i32
+        file.write(&self.id_main.to_le_bytes())?; // i32
+        file.write(&zero.to_le_bytes())?; // i32
 
         let num_bytes_main_chunk_pos = self.get_file_pos(&file);
-        file.write(&zero.to_le_bytes());
+        file.write(&zero.to_le_bytes())?;
 
         let header_size = self.get_file_pos(&file);
 
@@ -838,7 +856,7 @@ impl VoxWriter {
         for i in 0..count_cubes {
             let c = self.cubes[i].borrow_mut();
 
-            c.write(&file);
+            c.write(&file)?;
 
             let mut trans = Ntrn::create(1);
             node_ids += 1;
@@ -888,13 +906,13 @@ impl VoxWriter {
             shapes.push(shape);
         }
 
-        root_transform.write(&file);
-        root_group.write(&file);
+        root_transform.write(&file)?;
+        root_group.write(&file)?;
 
         // trn & shp
         for i in 0..count_cubes {
-            shape_transforms[i].write(&file);
-            shapes[i].write(&file);
+            shape_transforms[i].write(&file)?;
+            shapes[i].write(&file)?;
         }
 
         // no layr in my cases
@@ -919,17 +937,22 @@ impl VoxWriter {
                 }
             }
 
-            palette.write(&file);
+            palette.write(&file)?;
         }
 
         let main_child_chunk_size = self.get_file_pos(&file) - header_size;
-        self.set_file_pos(&file, num_bytes_main_chunk_pos);
+        self.set_file_pos(&file, num_bytes_main_chunk_pos)?;
         let size = main_child_chunk_size as i32;
-        file.write(&size.to_le_bytes());
+        file.write(&size.to_le_bytes())?;
 
         file.sync_all()?; // ensure than all ops are done
 
         Ok(())
+    }
+
+    pub fn print_stats(&self) {
+        let count_cubes = self.cubes.len();
+        println!("count cubes : {}", count_cubes);
     }
 }
 
