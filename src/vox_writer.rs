@@ -25,10 +25,9 @@ SOFTWARE.
 use std::borrow::BorrowMut;
 use std::collections::HashMap;
 use std::ffi::CString;
-use std::fmt::{Debug, Formatter};
 use std::fs::File;
 use std::hash::Hash;
-use std::io::{Read, Seek, SeekFrom, Write};
+use std::io::{Seek, SeekFrom, Write};
 use std::mem;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -64,7 +63,6 @@ struct AABBCC {
     upper_bound: Point3<f64>,
 }
 
-#[allow(dead_code)]
 impl AABBCC {
     fn create(low: f64, up: f64) -> Self {
         Self {
@@ -92,7 +90,6 @@ impl AABBCC {
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-#[allow(dead_code)]
 pub fn get_id_char(a: char, b: char, c: char, d: char) -> u32 {
     return ((a as i32) | ((b as i32) << 8) | ((c as i32) << 16) | ((d as i32) << 24)) as u32;
 }
@@ -101,7 +98,6 @@ fn test_get_id_char() {
     assert_eq!(get_id_char('V', 'O', 'X', ' '), 542658390);
 }
 
-#[allow(dead_code)]
 pub fn get_id_u8(a: u8, b: u8, c: u8, d: u8) -> u32 {
     return ((a as i32) | ((b as i32) << 8) | ((c as i32) << 16) | ((d as i32) << 24)) as u32;
 }
@@ -157,6 +153,7 @@ fn test_dictstring_filled_get_size() {
     let stru = DICTstring::create_from_string(CString::new("toto va au zoo et c'est beau").unwrap());
     assert_eq!(stru.get_size(), 32);
 }
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 struct DICTitem {
