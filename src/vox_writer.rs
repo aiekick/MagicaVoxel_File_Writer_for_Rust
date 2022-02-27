@@ -154,7 +154,7 @@ fn test_dictstring_empty_get_size() {
 
 #[test]
 fn test_dictstring_filled_get_size() {
-    let stru = DICTstring::create_from_string(CString::from("toto va au zoo et c'est beau"));
+    let stru = DICTstring::create_from_string(CString::new("toto va au zoo et c'est beau").unwrap());
     assert_eq!(stru.get_size(), 32);
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
