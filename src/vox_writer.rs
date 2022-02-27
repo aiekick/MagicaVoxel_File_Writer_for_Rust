@@ -22,12 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-use std::borrow::BorrowMut;
+use std::io::{Seek, SeekFrom, Write};
 use std::collections::HashMap;
 use std::ffi::CString;
-use std::fs::File;
 use std::hash::Hash;
-use std::io::{Seek, SeekFrom, Write};
+use std::fs::File;
 use std::mem;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -509,7 +508,6 @@ impl Size {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 struct XYZI {
-    num_voxels: i32,
     voxels: Vec<u8>,
 }
 
@@ -517,7 +515,6 @@ struct XYZI {
 impl XYZI {
     fn create_empty() -> Self {
         Self {
-            num_voxels: 0,
             voxels: vec![],
         }
     }
@@ -532,14 +529,17 @@ impl XYZI {
         fp.write(&child_size.to_le_bytes())?;
 
         // datas's
-        fp.write(&self.num_voxels.to_le_bytes())?;
+        fp.write(&self.get_num_voxels().to_le_bytes())?;
         fp.write(&self.voxels)?;
         Ok(())
     }
 
+    fn get_num_voxels(&self) -> i32 {
+        (self.voxels.len() / 4) as i32
+    }
+
     fn get_size(&mut self) -> usize {
-        self.num_voxels = (self.voxels.len() / 4) as i32;
-        return mem::size_of::<i32>() * (1 + self.num_voxels as usize);
+        return mem::size_of::<i32>() * (1 + self.get_num_voxels() as usize);
     }
 }
 
@@ -839,7 +839,6 @@ impl VoxWriter {
         let header_size = self.get_file_pos(&file);
 
         let count_cubes = self.cubes.len();
-        //println!("count_cubes : {}", count_cubes);
 
         let mut node_ids = 0;
         let mut root_transform = Ntrn::create(1);
@@ -854,7 +853,7 @@ impl VoxWriter {
         let mut shapes: Vec<Nshp> = vec![];
         let mut shape_transforms: Vec<Ntrn> = vec![];
         for i in 0..count_cubes {
-            let c = self.cubes[i].borrow_mut();
+            let c = self.cubes.get_mut(i).unwrap();
 
             c.write(&file)?;
 
@@ -865,11 +864,6 @@ impl VoxWriter {
             node_ids += 1;
             trans.child_node_id = node_ids;
             trans.layer_id = 0;
-
-            //println!("min_cube_x,y,z : ({} {} {})", self.min_cube_x, self.min_cube_y, self.min_cube_z);
-            //println!("max_voxel_per_cube_x,y,z : ({} {} {})", self.max_voxel_per_cube_x, self.max_voxel_per_cube_y, self.max_voxel_per_cube_z);
-            //println!("max_volume.lower_bound.x,y,z : ({} {} {})", self.max_volume.lower_bound.x, self.max_volume.lower_bound.y, self.max_volume.lower_bound.z);
-            //println!("max_volume.size.x,y,z : ({} {} {})", self.max_volume.size().x, self.max_volume.size().y, self.max_volume.size().z);
 
             c.tx = f64::floor(
                 (c.tx as f64 - self.min_cube_x as f64 + 0.5) * self.max_voxel_per_cube_x as f64
@@ -887,11 +881,7 @@ impl VoxWriter {
 
             // not an animation in my case so only first frame frames[0]
 
-            //println!("apres : translation ({} {} {}) of cube {}", c.tx, c.ty, c.tz, i);
-
             let str = CString::new(format!("{} {} {}", c.tx, c.ty, c.tz)).unwrap();
-
-            //println!("str : ({})", str.to_str().expect("failt to convert CString to (UTF8) String"));
 
             trans.frames[0].add(
                 CString::new("_t").expect("Fail to create CString::new"),
@@ -951,8 +941,20 @@ impl VoxWriter {
     }
 
     pub fn print_stats(&self) {
+        println!("---- Stats -----");
         let count_cubes = self.cubes.len();
         println!("count cubes : {}", count_cubes);
+        println!("Volume : {} x {} x {}",
+                 self.max_volume.size().x,
+                 self.max_volume.size().y,
+                 self.max_volume.size().z);
+        let mut count_voxels:u64  = 0;
+        for i in 0..count_cubes {
+            let c = self.cubes.get(i).unwrap();
+            count_voxels += c.xyzi.get_num_voxels() as u64;
+        }
+        println!("count voxels : {}", count_voxels);
+        println!("----------------");
     }
 }
 
