@@ -1,3 +1,27 @@
+/*
+MIT License
+
+Copyright (c) 2022 Stephane Cuillerdier (aka Aiekick)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
 use std::borrow::BorrowMut;
 use std::collections::HashMap;
 use std::ffi::CString;
@@ -716,43 +740,34 @@ impl VoxWriter {
     }
 
     fn get_cube_id(&mut self, v_x: i32, v_y: i32, v_z: i32) -> i32 {
-        let id = self.cube_id.get(&v_x, &v_y, &v_z);
+        let mut id = self.cube_id.get(&v_x, &v_y, &v_z);
         match id {
-            Some(_) => {
-                return id.unwrap().clone();
-            }
+            Some(_) => {}
             None => {
                 self.cube_id.set(v_x, v_y, v_z, self.max_cube_id);
                 self.max_cube_id += 1;
-                return self.cube_id.get(&v_x, &v_y, &v_z).unwrap().clone();
+                id = self.cube_id.get(&v_x, &v_y, &v_z);
             }
         }
+        return id.unwrap().clone();
     }
 
     fn get_cube(&mut self, v_x: i32, v_y: i32, v_z: i32) -> Option<&mut VoxCube> {
         let cube_id = self.get_cube_id(v_x, v_y, v_z) as usize;
         if cube_id == self.cubes.len() {
             let mut _cube = VoxCube::create_empty();
-
             _cube.cube_id = cube_id as i32;
-
             _cube.tx = v_x;
             _cube.ty = v_y;
             _cube.tz = v_z;
-
-            //println!("get_cube : translation ({} {} {}) of cube {}", v_x, v_y, v_z, cube_id);
-
             _cube.size.size_x = self.max_voxel_per_cube_x + 1;
             _cube.size.size_y = self.max_voxel_per_cube_y + 1;
             _cube.size.size_z = self.max_voxel_per_cube_z + 1;
-
             self.cubes.push(_cube);
         }
-
         if cube_id < self.cubes.len() {
             return self.cubes.get_mut(cube_id);
         }
-
         return None;
     }
 
@@ -766,13 +781,9 @@ impl VoxWriter {
 
     fn merge_voxel_in_cube(
         &mut self,
-        v_x: i32,
-        v_y: i32,
-        v_z: i32,
+        v_x: i32, v_y: i32, v_z: i32,
         v_color_index: u8,
-        c_x: i32,
-        c_y: i32,
-        c_z: i32,
+        c_x: i32, c_y: i32, c_z: i32,
     ) {
         self.max_volume
             .combine(Point3::<f64>::create3(v_x as f64, v_y as f64, v_z as f64));
