@@ -8,13 +8,40 @@ fn mix(x:f64, y:f64, a:f64) -> f64 {
 }
 
 #[allow(dead_code)]
-fn step(x:f64, y:f64)->f64 { if y < x { return 0.0; } return 1.0; }
+fn step(edge:f64, v:f64)->f64 { if v < edge { return 0.0; } return 1.0; }
 
 #[allow(dead_code)]
 fn sign(v:f64) -> f64 { if v < 0.0 { return -1.0; } return 1.0; }
 
 #[allow(dead_code)]
 fn atan2(x:f64, y:f64)->f64 { if x != 0.0 {return y / x; } return 1.0; }
+
+/*
+struct vec2
+{
+    x:f64,
+    y:f64
+}
+
+// m 00 10
+// m 10 11
+struct mat2
+{
+    m:[f64, 4]
+}
+
+impl mat2
+{
+    fn create(v_a:f64, v_b:f64, v_c:f64, v_d:f64) -> Self {
+        Self { m[0]=v_a, m[1]=v_b, m[2]=v_c, m[3]=v_d }
+    }
+    
+    fn mult(&self, p:vec2) -> vec2> {
+        vec2 { p.x * self.m[0] + p.x * self.m[1],
+               p.y * self.m[2] + p.y * self.m[3] }
+    }
+}
+*/
 
 #[allow(dead_code)]
 fn generate_julia_revolute()
@@ -45,10 +72,15 @@ fn generate_julia_revolute()
                     let mut rev_x = path;
                     let mut rev_z = pz;
 
-                    //let _ca = an.cos();
-                    //let _sa = an.sin();
-                    //rev *= mat2(cos(a), -sin(a), sin(a), cos(a));
-
+                    // rev *= mat2(cos(a), -sin(a), sin(a), cos(a));
+                    // p.x * self.m[0] + p.x * self.m[1],
+                    // p.y * self.m[2] + p.y * self.m[3]
+                    
+                    let _ca = an.cos();
+                    let _sa = an.sin();
+                    rev_x *= _ca - _sa;
+                    rev_y *= _sa + _ca;
+                    
                     let mut kk = 1.0;
                     let mut hh = 1.0;
 
