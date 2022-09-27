@@ -47,7 +47,7 @@ fn generate_julia_revolute()
     {
         let mut vox = VoxWriter::create_empty();
 
-        const SIZE:i32 = 300;
+        const SIZE:i32 = 500;
         const ZOOM_XZ:f64 = 5.0;
         const ZOOM_Y:f64 = 5.0;
 
@@ -86,7 +86,7 @@ fn generate_julia_revolute()
                         {
                             break;
                         }
-                       let tmp_x = rev_x;
+                        let tmp_x = rev_x;
                         rev_x = rev_x * rev_x - rev_y * rev_y + cx;
                         rev_y = 2.0 * tmp_x * rev_y + cy;
                     }
@@ -95,15 +95,14 @@ fn generate_julia_revolute()
 
                     if f64::abs(df) - 0.01 < 0.0
                     {
-                        let cube_color = (i + j + k) % 255 + 1;
-                        //vox.add_voxel(i, j, k, cube_color);
+                        let cube_color = ((f64::sin(rev_x + rev_y) * 0.5 + 0.5) * 6.0) as i32 + 249;
                         vox.add_voxel(i, k, j, cube_color); // magicavoxel use the z as up axis
                     }
                 }
             }
         }
         vox.save_to_file("julia_revolute_voxwriter.vox".to_string())
-            .expect("Fail to save vow file");
+            .expect("Fail to save vox file");
         vox.print_stats();
     }
     let elapsed = now.elapsed();
