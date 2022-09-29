@@ -55,7 +55,7 @@ fn main() {
             let path = f64::sqrt(px * px + pz * pz) - 3.0;
             for j in 0..SIZE {
                 let mut rev_y = (j as f64 * 2.0 / SIZE as f64 - 1.0) * ZOOM_Y;
-				let mut rev_x = path;
+                let mut rev_x = path;
                 let mut kk = 1.0;
                 let mut hh = 1.0;
                 for _idx in 0..ITERATIONS {
