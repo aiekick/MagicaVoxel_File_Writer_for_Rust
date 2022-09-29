@@ -8,7 +8,7 @@ repository = "https://github.com/aiekick/MagicaVoxel_File_Writer_for_Rust"
 authors = ["Stephane Cuillerdier (aka aiekick) <aiekick@funparadigm.com>"]
 readme = "README.md"
 keywords = ["vox", "magicavoxel", "3d", "file", "writer"]
-categories = ["data-structures", "encoding", "parsing-tools",]
+categories = ["data-structures", "encoding", "parsing", "parser-implementations"]
 exclude = [
     "/.github/*",
     "/main*",
