@@ -6,13 +6,6 @@ description = "A simple writer module for MagicaVoxel file format"
 documentation = "https://docs.rs/addr2line"
 license = "MIT"
 repository = "https://github.com/aiekick/MagicaVoxel_File_Writer_for_Rust"
-
-[profile.dev]
-opt-level = 0
-
-[profile.release]
-opt-level = 3
-
 exclude = [
     "main.jpg",
     "main2.jpg",
