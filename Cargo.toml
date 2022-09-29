@@ -1,11 +1,11 @@
 [package]
-name = "rust_wox_writer"
+name = "vox_writer"
 version = "0.1.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
+description = "A simple writer module for MagicaVoxel file format"
+documentation = "https://docs.rs/addr2line"
+license = "MIT"
+repository = "https://github.com/aiekick/MagicaVoxel_File_Writer_for_Rust"
 
 [profile.dev]
 opt-level = 0

@@ -22,11 +22,73 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-use std::io::{Seek, SeekFrom, Write};
 use std::collections::HashMap;
 use std::ffi::CString;
-use std::hash::Hash;
 use std::fs::File;
+use std::hash::Hash;
+
+/// samples code 1
+///
+/// let mut vox = VoxWriter::create_empty();
+/// for i in 0..1000 {
+///     for j in 0..1000 {
+///         let cube_pos = f64::floor(f64::sin((i * i + j * j) as f64 / 50000.0 * 0.25) * 150.0) + 150.0;
+///         let cube_color = (i + j) % 255 + 1;
+///         vox.add_voxel(i, j, cube_pos as i32, cube_color);
+///     }
+/// }
+/// vox.save_to_file("default_voxwriter.vox".to_string())
+///     .expect("Fail to save vow file");
+/// vox.print_stats();
+///
+/// samples code 2
+///
+/// fn main() {
+///     let now = Instant::now();
+///     let mut vox = VoxWriter::create_empty();
+///     const SIZE:i32 = 500;
+///     const ZOOM_XZ:f64 = 5.0;
+///     const ZOOM_Y:f64 = 5.0;
+///     const ITERATIONS:i32 = 5;
+///     fn mix(x:f64, y:f64, a:f64) -> f64 {
+///         x * (1.0 - a) + y * a
+///     }
+///     for i in 0..SIZE {
+///         let px = (i as f64 * 2.0 / SIZE as f64 - 1.0) * ZOOM_XZ;
+///         for k in 0..SIZE {
+///             let pz = (k as f64 * 2.0 / SIZE as f64 - 1.0) * ZOOM_XZ;
+///             let an = f64::atan2(px, pz);
+///             let cx = mix(0.2, -0.5, f64::sin(an * 2.0));
+///             let cy = mix(0.5, 0.0, f64::sin(an * 3.0));
+///             let path = f64::sqrt(px * px + pz * pz) - 3.0;
+///             for j in 0..SIZE {
+///                 let mut rev_y = (j as f64 * 2.0 / SIZE as f64 - 1.0) * ZOOM_Y;
+///                 let mut rev_x = path;
+///                 let mut kk = 1.0;
+///                 let mut hh = 1.0;
+///                 for _idx in 0..ITERATIONS {
+///                     hh *= 4.0 * kk;
+///                     kk = rev_x * rev_x + rev_y * rev_y;
+///                     if kk > 4.0 { break; }
+///                     let tmp_x = rev_x;
+///                     rev_x = rev_x * rev_x - rev_y * rev_y + cx;
+///                     rev_y = 2.0 * tmp_x * rev_y + cy;
+///                 }
+///                 let df = f64::sqrt(kk / hh) * f64::log10(kk);
+///                 if f64::abs(df) - 0.01 < 0.0 {
+///                     let cube_color = ((f64::sin(rev_x + rev_y) * 0.5 + 0.5) * 6.0) as i32 + 249;
+///                     vox.add_voxel(i, k, j, cube_color); // magicavoxel use the z as up axis
+///                 }
+///             }
+///         }
+///     }
+///     vox.save_to_file("julia_revolute_voxwriter.vox".to_string())
+///         .expect("Fail to save vox file");
+///     vox.print_stats();
+///     println!("generate_julia_revolute Elapsed Time : {:.2?}", now.elapsed());
+/// }
+
+use std::io::{Seek, SeekFrom, Write};
 use std::mem;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -56,10 +118,8 @@ impl<T: Clone> Point3<T> {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 struct AABBCC {
-    // the lower left vertex
-    lower_bound: Point3<f64>,
-    // the upper right vertex
-    upper_bound: Point3<f64>,
+    lower_bound: Point3<f64>, // the lower left vertex
+    upper_bound: Point3<f64>, // the upper right vertex
 }
 
 impl AABBCC {
@@ -92,6 +152,7 @@ impl AABBCC {
 pub fn get_id_char(a: char, b: char, c: char, d: char) -> u32 {
     return ((a as i32) | ((b as i32) << 8) | ((c as i32) << 16) | ((d as i32) << 24)) as u32;
 }
+
 #[test]
 fn test_get_id_char() {
     assert_eq!(get_id_char('V', 'O', 'X', ' '), 542658390);
@@ -140,6 +201,7 @@ impl DICTstring {
             + mem::size_of::<u8>() * (self.buffer.as_bytes().len() as usize); // prefer use u8 instead
     }
 }
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -316,7 +378,7 @@ impl Ngrp {
         }
     }
 
-    fn write(&mut self, mut fp: &File) -> std::io::Result<()>  {
+    fn write(&mut self, mut fp: &File) -> std::io::Result<()> {
         // chunk header
         let id = get_id_char('n', 'G', 'R', 'P') as i32;
         fp.write(&id.to_le_bytes())?;
@@ -948,7 +1010,7 @@ impl VoxWriter {
                  self.max_volume.size().x,
                  self.max_volume.size().y,
                  self.max_volume.size().z);
-        let mut count_voxels:u64  = 0;
+        let mut count_voxels: u64 = 0;
         for i in 0..count_cubes {
             let c = self.cubes.get(i).unwrap();
             count_voxels += c.xyzi.get_num_voxels() as u64;
