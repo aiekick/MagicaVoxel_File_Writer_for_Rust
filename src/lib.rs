@@ -26,6 +26,8 @@ use std::collections::HashMap;
 use std::ffi::CString;
 use std::fs::File;
 use std::hash::Hash;
+use std::io::{Seek, SeekFrom, Write};
+use std::mem;
 
 /// samples code 1
 ///
@@ -88,12 +90,9 @@ use std::hash::Hash;
 ///     println!("generate_julia_revolute Elapsed Time : {:.2?}", now.elapsed());
 /// }
 
-use std::io::{Seek, SeekFrom, Write};
-use std::mem;
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-pub struct Point3<T> {
+struct Point3<T> {
     pub x: T,
     pub y: T,
     pub z: T,
@@ -149,7 +148,7 @@ impl AABBCC {
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-pub fn get_id_char(a: char, b: char, c: char, d: char) -> u32 {
+fn get_id_char(a: char, b: char, c: char, d: char) -> u32 {
     return ((a as i32) | ((b as i32) << 8) | ((c as i32) << 16) | ((d as i32) << 24)) as u32;
 }
 
@@ -158,7 +157,7 @@ fn test_get_id_char() {
     assert_eq!(get_id_char('V', 'O', 'X', ' '), 542658390);
 }
 
-pub fn get_id_u8(a: u8, b: u8, c: u8, d: u8) -> u32 {
+fn get_id_u8(a: u8, b: u8, c: u8, d: u8) -> u32 {
     return ((a as i32) | ((b as i32) << 8) | ((c as i32) << 16) | ((d as i32) << 24)) as u32;
 }
 
@@ -173,7 +172,7 @@ struct DICTstring {
     buffer: CString, // non utf8
 }
 
-#[allow(dead_code)]
+
 impl DICTstring {
     fn create(v_buffer: CString) -> Self {
         Self { buffer: v_buffer }
@@ -226,6 +225,7 @@ struct DICTitem {
     value: DICTstring,
 }
 
+
 #[allow(dead_code)]
 impl DICTitem {
     fn create_empty() -> Self {
@@ -260,7 +260,7 @@ struct DICT {
     keys: Vec<DICTitem>,
 }
 
-#[allow(dead_code)]
+
 impl DICT {
     fn create_empty() -> Self {
         Self {
@@ -304,7 +304,7 @@ struct Ntrn {
     frames: Vec<DICT>,
 }
 
-#[allow(dead_code)]
+
 impl Ntrn {
     fn create(count_frames: i32) -> Self {
         let mut _frames: Vec<DICT> = vec![];
@@ -362,7 +362,7 @@ struct Ngrp {
     child_nodes: Vec<i32>,
 }
 
-#[allow(dead_code)]
+
 impl Ngrp {
     fn create(count: i32) -> Self {
         let mut nodes: Vec<i32> = vec![];
@@ -416,7 +416,7 @@ struct Model {
     model_attribs: DICT,
 }
 
-#[allow(dead_code)]
+
 impl Model {
     fn create_empty() -> Self {
         Self {
@@ -445,7 +445,7 @@ struct Nshp {
     models: Vec<Model>,
 }
 
-#[allow(dead_code)]
+
 impl Nshp {
     fn create(count: i32) -> Self {
         let mut _models: Vec<Model> = vec![];
@@ -497,6 +497,7 @@ struct LAYR {
     reserved_id: i32,
 }
 
+
 #[allow(dead_code)]
 impl LAYR {
     fn create_empty() -> Self {
@@ -536,7 +537,7 @@ struct Size {
     size_z: i32,
 }
 
-#[allow(dead_code)]
+
 impl Size {
     fn create_empty() -> Self {
         Self {
@@ -573,7 +574,7 @@ struct XYZI {
     voxels: Vec<u8>,
 }
 
-#[allow(dead_code)]
+
 impl XYZI {
     fn create_empty() -> Self {
         Self {
@@ -611,7 +612,7 @@ struct RGBA {
     colors: Vec<i32>,
 }
 
-#[allow(dead_code)]
+
 impl RGBA {
     fn create_empty() -> Self {
         Self {
@@ -697,7 +698,7 @@ trait Memory<A: Eq + Hash, B: Eq + Hash, C: Eq + Hash> {
     fn set(&mut self, a: A, b: B, c: C, v: i32);
 }
 
-pub struct Table<A: Eq + Hash, B: Eq + Hash, C: Eq + Hash> {
+struct Table<A: Eq + Hash, B: Eq + Hash, C: Eq + Hash> {
     table: HashMap<A, HashMap<B, HashMap<C, i32>>>,
 }
 
@@ -723,7 +724,8 @@ impl<A: Eq + Hash, B: Eq + Hash, C: Eq + Hash> Memory<A, B, C> for Table<A, B, C
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-pub(crate) struct VoxWriter {
+#[doc = "the Vox file format writer"]
+pub struct VoxWriter {
     mv_version: i32,
     id_vox: u32,
     id_main: u32,
@@ -743,15 +745,8 @@ pub(crate) struct VoxWriter {
 
 #[allow(dead_code)]
 impl VoxWriter {
-    //////////////////////////////////////////////////////////////////
-    // the limit of magicavoxel is 127 for one voxel, is 127 voxels (indexs : 0 -> 126)
-    // vMaxVoxelPervoxelX,Y,Z define the limit of one voxel
-    // default values for limit xyz will be 126
+    #[doc = "create an empty volume of limitx x limity x limitz voxels"]
     fn create(limitx: i32, limity: i32, limitz: i32) -> Self {
-        // the limit of magicavoxel is 127 because the first is 1 not 0
-        // so this is 0 to 126
-        // index limit, size is 127
-
         Self {
             mv_version: 150,
             id_vox: get_id_char('V', 'O', 'X', ' '),
@@ -771,18 +766,22 @@ impl VoxWriter {
         }
     }
 
+    #[doc = "create an empty volume of 127^3 voxels. but can be extended automatically as long as you add voxels"]
     pub fn create_empty() -> Self {
         Self::create(126, 126, 126)
     }
 
+    #[doc = "will clear the voxels of all cubes"]
     pub fn clear_voxels(&mut self) {
         self.cubes.clear();
     }
 
+    #[doc = "will clear the colors of all voxels of all cubes"]
     pub fn clear_colors(&mut self) {
         self.colors.clear();
     }
 
+    #[doc = "add a color at an color index"]
     pub fn add_color(&mut self, v_r: u8, v_g: u8, v_b: u8, v_a: u8, index: u8) {
         while self.colors.len() <= index as usize {
             self.colors.push(0);
@@ -790,6 +789,7 @@ impl VoxWriter {
         self.colors[index as usize] = get_id_u8(v_r, v_g, v_b, v_a) as i32;
     }
 
+    #[doc = "add a voxel at pox x,y,z with a color index. yuou dont need to specify the world cube"]
     pub fn add_voxel(&mut self, v_x: i32, v_y: i32, v_z: i32, v_color_index: i32) {
         // voxel pos
         let ox = f64::floor(v_x as f64 / self.max_voxel_per_cube_x as f64) as i32;
@@ -885,6 +885,7 @@ impl VoxWriter {
         }
     }
 
+    #[doc = "save the file tp file_path_name"]
     pub fn save_to_file(&mut self, file_path_name: String) -> std::io::Result<()> {
         let mut file = File::create(file_path_name)?;
 
@@ -1002,6 +1003,7 @@ impl VoxWriter {
         Ok(())
     }
 
+    #[doc = "print some stats"]
     pub fn print_stats(&self) {
         println!("---- Stats -----");
         let count_cubes = self.cubes.len();
@@ -1021,3 +1023,4 @@ impl VoxWriter {
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+

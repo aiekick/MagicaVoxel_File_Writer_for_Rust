@@ -28,7 +28,7 @@ fn main() {
 }
 ```
 
-you can generate that (previewed in [Magicavoxel](https://ephtracy.github.io/)
+you can generate that (previewed in [Magicavoxel](https://ephtracy.github.io/))
 
 ![main](main.jpg)
 
@@ -36,8 +36,9 @@ you can generate that (previewed in [Magicavoxel](https://ephtracy.github.io/)
 ### Sample code 2 :
 
 ```rust
+mod vox_writer;
 fn main() {
-    let mut vox = VoxWriter::create_empty();
+    let mut vox = vox_writer::VoxWriter::create_empty();
     const SIZE:i32 = 1000;
     const ZOOM_XZ:f64 = 5.0;
     const ZOOM_Y:f64 = 5.0;
@@ -79,6 +80,6 @@ fn main() {
 }
 ```
 
-you can generate that (previewed in [Magicavoxel](https://ephtracy.github.io/)
+you can generate that (previewed in [Magicavoxel](https://ephtracy.github.io/))
 
 ![main2](main2.jpg)
