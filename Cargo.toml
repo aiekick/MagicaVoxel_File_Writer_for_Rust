@@ -3,10 +3,13 @@ name = "vox_writer"
 version = "0.1.0"
 edition = "2021"
 description = "A simple writer module for MagicaVoxel file format"
-documentation = "https://docs.rs/addr2line"
 license = "MIT"
 repository = "https://github.com/aiekick/MagicaVoxel_File_Writer_for_Rust"
+authors = ["Stephane Cuillerdier (aka aiekick) <aiekick@funparadigm.com>"]
+readme = "README.md"
+keywords = ["vox", "magicavoxel", "3d", "file", "format", "writer"]
+categories = ["file"]
 exclude = [
-    "main.jpg",
-    "main2.jpg",
+    "/.github/*",
+    "/main*",
 ]
