@@ -12,3 +12,8 @@ opt-level = 0
 
 [profile.release]
 opt-level = 3
+
+exclude = [
+    "main.jpg",
+    "main2.jpg",
+]
