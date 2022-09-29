@@ -1,6 +1,6 @@
 [package]
 name = "vox_writer"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 description = "A simple writer module for MagicaVoxel file format"
 license = "MIT"
@@ -8,7 +8,7 @@ repository = "https://github.com/aiekick/MagicaVoxel_File_Writer_for_Rust"
 authors = ["Stephane Cuillerdier (aka aiekick) <aiekick@funparadigm.com>"]
 readme = "README.md"
 keywords = ["vox", "magicavoxel", "3d", "file", "writer"]
-categories = ["Data structures", "Encoding", "Parsing tools",]
+categories = ["data-structures", "encoding", "parsing-tools",]
 exclude = [
     "/.github/*",
     "/main*",
