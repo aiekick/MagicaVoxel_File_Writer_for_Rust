@@ -2,10 +2,6 @@
 
 my conversion to Rust of my original c++ [MagicaVoxel File Writer](https://github.com/aiekick/MagicaVoxel_File_Writer)
 
-vox.hm is the file format descriptor for HexaMonkey :
-- original topic about it : https://github.com/ephtracy/voxel-model/issues/19
-- HexaMonkey tool : http://hexamonkey.com/
-
 ### Sample code 1 :
 
 ```rust
