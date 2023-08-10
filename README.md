@@ -5,8 +5,6 @@ my conversion to Rust of my original c++ [MagicaVoxel File Writer](https://githu
 ### Sample code 1 :
 
 ```rust
-mod vox_writer;
-
 fn main() {
     let mut vox = vox_writer::VoxWriter::create_empty();
 
@@ -32,7 +30,6 @@ you can generate that (previewed in [Magicavoxel](https://ephtracy.github.io/))
 ### Sample code 2 :
 
 ```rust
-mod vox_writer;
 fn main() {
     let mut vox = vox_writer::VoxWriter::create_empty();
     const SIZE:i32 = 1000;
