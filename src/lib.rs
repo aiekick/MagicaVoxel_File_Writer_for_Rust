@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2022 Stephane Cuillerdier (aka Aiekick)
+Copyright (c) 2022-2023 Stephane Cuillerdier (aka Aiekick)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -747,7 +747,7 @@ mod vox_writer {
     #[allow(dead_code)]
     impl VoxWriter {
         #[doc = "create an empty volume of limitx x limity x limitz voxels"]
-        fn create(limitx: i32, limity: i32, limitz: i32) -> Self {
+        pub fn create(limitx: i32, limity: i32, limitz: i32) -> Self {
             Self {
                 mv_version: 150,
                 id_vox: get_id_char('V', 'O', 'X', ' '),
@@ -1026,3 +1026,4 @@ mod vox_writer {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
+pub use vox_writer::*;
