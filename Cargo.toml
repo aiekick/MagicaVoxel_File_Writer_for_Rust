@@ -11,6 +11,7 @@ documentation = "https://docs.rs/vox_writer/"
 keywords = ["vox", "magicavoxel", "3d", "file", "writer"]
 categories = ["data-structures", "encoding", "parsing", "parser-implementations"]
 exclude = [
+    "/.gitignore",
     "/.github/*",
     "/main*",
 ]
