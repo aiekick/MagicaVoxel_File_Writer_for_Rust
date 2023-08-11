@@ -91,7 +91,7 @@ mod vox_writer {
     ///     println!("generate_julia_revolute Elapsed Time : {:.2?}", now.elapsed());
     /// }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
 
     struct Point3<T> {
         pub x: T,
@@ -115,7 +115,7 @@ mod vox_writer {
         }
     }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
 
     struct AABBCC {
         lower_bound: Point3<f64>, // the lower left vertex
@@ -147,7 +147,7 @@ mod vox_writer {
             self.upper_bound.z = f64::max(self.upper_bound.z, v_pt.z);
         }
     }
-///////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
 
     fn get_id_char(a: char, b: char, c: char, d: char) -> u32 {
         return ((a as i32) | ((b as i32) << 8) | ((c as i32) << 16) | ((d as i32) << 24)) as u32;
@@ -167,12 +167,11 @@ mod vox_writer {
         assert_eq!(get_id_u8(86, 79, 88, 32), 542658390);
     }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
 
     struct DICTstring {
         buffer: CString, // non utf8
     }
-
 
     impl DICTstring {
         fn create(v_buffer: CString) -> Self {
@@ -198,7 +197,8 @@ mod vox_writer {
             // dont use mem::size_of::<char>() in rust because its unicode so on 4 bytes
             // prefer use u8 instead
             return mem::size_of::<i32>()
-                + mem::size_of::<u8>() * (self.buffer.as_bytes().len() as usize); // prefer use u8 instead
+                + mem::size_of::<u8>() * (self.buffer.as_bytes().len() as usize);
+            // prefer use u8 instead
         }
     }
 
@@ -214,18 +214,18 @@ mod vox_writer {
 
         #[test]
         fn test_dictstring_filled_get_size() {
-            let stru =
-                DICTstring::create_from_string(CString::new("toto va au zoo et c'est beau").unwrap());
+            let stru = DICTstring::create_from_string(
+                CString::new("toto va au zoo et c'est beau").unwrap(),
+            );
             assert_eq!(stru.get_size(), 32);
         }
     }
-///////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
 
     struct DICTitem {
         key: DICTstring,
         value: DICTstring,
     }
-
 
     #[allow(dead_code)]
     impl DICTitem {
@@ -254,13 +254,12 @@ mod vox_writer {
         }
     }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
 
     struct DICT {
         count: i32,
         keys: Vec<DICTitem>,
     }
-
 
     impl DICT {
         fn create_empty() -> Self {
@@ -293,7 +292,7 @@ mod vox_writer {
         }
     }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
 
     struct Ntrn {
         node_id: i32,
@@ -304,7 +303,6 @@ mod vox_writer {
         num_frames: i32,
         frames: Vec<DICT>,
     }
-
 
     impl Ntrn {
         fn create(count_frames: i32) -> Self {
@@ -363,7 +361,6 @@ mod vox_writer {
         child_nodes: Vec<i32>,
     }
 
-
     impl Ngrp {
         fn create(count: i32) -> Self {
             let mut nodes: Vec<i32> = vec![];
@@ -410,13 +407,12 @@ mod vox_writer {
         }
     }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
 
     struct Model {
         model_id: i32,
         model_attribs: DICT,
     }
-
 
     impl Model {
         fn create_empty() -> Self {
@@ -437,7 +433,7 @@ mod vox_writer {
         }
     }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
 
     struct Nshp {
         node_id: i32,
@@ -445,7 +441,6 @@ mod vox_writer {
         num_models: i32,
         models: Vec<Model>,
     }
-
 
     impl Nshp {
         fn create(count: i32) -> Self {
@@ -490,14 +485,13 @@ mod vox_writer {
         }
     }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
 
     struct LAYR {
         node_id: i32,
         node_attribs: DICT,
         reserved_id: i32,
     }
-
 
     #[allow(dead_code)]
     impl LAYR {
@@ -530,14 +524,13 @@ mod vox_writer {
         }
     }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
 
     struct Size {
         size_x: i32,
         size_y: i32,
         size_z: i32,
     }
-
 
     impl Size {
         fn create_empty() -> Self {
@@ -569,18 +562,15 @@ mod vox_writer {
         }
     }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
 
     struct XYZI {
         voxels: Vec<u8>,
     }
 
-
     impl XYZI {
         fn create_empty() -> Self {
-            Self {
-                voxels: vec![],
-            }
+            Self { voxels: vec![] }
         }
 
         fn write(&mut self, mut fp: &File) -> std::io::Result<()> {
@@ -607,12 +597,11 @@ mod vox_writer {
         }
     }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
 
     struct RGBA {
         colors: Vec<i32>,
     }
-
 
     impl RGBA {
         fn create_empty() -> Self {
@@ -647,7 +636,7 @@ mod vox_writer {
         }
     }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
 
     struct VoxCube {
         cube_id: i32,
@@ -691,7 +680,7 @@ mod vox_writer {
         }
     }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
 
     trait Memory<A: Eq + Hash, B: Eq + Hash, C: Eq + Hash> {
         fn get(&self, a: &A, b: &B, c: &C) -> Option<&i32>;
@@ -723,7 +712,7 @@ mod vox_writer {
         }
     }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
 
     #[doc = "the Vox file format writer"]
     pub struct VoxWriter {
@@ -834,9 +823,9 @@ mod vox_writer {
                 _cube.tx = v_x;
                 _cube.ty = v_y;
                 _cube.tz = v_z;
-                _cube.size.size_x = self.max_voxel_per_cube_x + 1;
-                _cube.size.size_y = self.max_voxel_per_cube_y + 1;
-                _cube.size.size_z = self.max_voxel_per_cube_z + 1;
+                _cube.size.size_x = self.max_voxel_per_cube_x;
+                _cube.size.size_y = self.max_voxel_per_cube_y;
+                _cube.size.size_z = self.max_voxel_per_cube_z;
                 self.cubes.push(_cube);
             }
             if cube_id < self.cubes.len() {
@@ -1009,10 +998,12 @@ mod vox_writer {
             println!("---- Stats -----");
             let count_cubes = self.cubes.len();
             println!("count cubes : {}", count_cubes);
-            println!("Volume : {} x {} x {}",
-                     self.max_volume.size().x,
-                     self.max_volume.size().y,
-                     self.max_volume.size().z);
+            println!(
+                "Volume : {} x {} x {}",
+                self.max_volume.size().x,
+                self.max_volume.size().y,
+                self.max_volume.size().z
+            );
             let mut count_voxels: u64 = 0;
             for i in 0..count_cubes {
                 let c = self.cubes.get(i).unwrap();
@@ -1023,7 +1014,7 @@ mod vox_writer {
         }
     }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
 pub use crate::vox_writer::*;
